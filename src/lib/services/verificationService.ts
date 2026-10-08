@@ -537,3 +537,171 @@ export async function approveOrder(
     };
   }
 }
+
+export type RejectOrderFailure =
+  | { ok: false; status: 404; error: string }
+  | { ok: false; status: 409; error: string }
+  | { ok: false; status: 500; error: string };
+
+export type RejectOrderSuccess = {
+  ok: true;
+  order: {
+    id: string;
+    orderNo: string;
+    status: "REJECTED";
+  };
+  logId: string;
+  wastagePct: number;
+  componentVariances: ComponentVariance[];
+};
+
+export type RejectOrderResult = RejectOrderSuccess | RejectOrderFailure;
+
+/**
+ * Rejects a cutting order in a single transaction:
+ * 1. Locks the row with SELECT ... FOR UPDATE to eliminate races / double-clicks.
+ * 2. 404 if missing, 409 if status is not PENDING_VERIFICATION.
+ * 3. Rejection is allowed even when counts are incomplete (no evaluateApproval gate).
+ * 4. Computes wastagePct and a componentVariances snapshot from whatever counts are present.
+ * 5. Transitions order to REJECTED and writes an immutable verification_log entry.
+ *    verifierId always comes from the JWT session — never from the caller.
+ */
+export async function rejectOrder(
+  orderId: string,
+  verifierId: string,
+  note: string,
+): Promise<RejectOrderResult> {
+  try {
+    type TxRejectResult =
+      | { type: "NOT_FOUND" }
+      | { type: "INVALID_STATUS"; currentStatus: OrderStatus }
+      | {
+          type: "SUCCESS";
+          order: { id: string; orderNo: string; status: "REJECTED" };
+          logId: string;
+          wastagePct: number;
+          componentVariances: ComponentVariance[];
+        };
+
+    const txResult = await prisma.$transaction<TxRejectResult>(
+      async (tx) => {
+        const lockedOrders = await tx.$queryRaw<
+          Array<{ id: string; status: OrderStatus }>
+        >`
+          SELECT id, status FROM cutting_orders WHERE id = ${orderId} FOR UPDATE
+        `;
+
+        if (lockedOrders.length === 0) {
+          return { type: "NOT_FOUND" };
+        }
+
+        const currentStatus = lockedOrders[0].status;
+        if (currentStatus !== "PENDING_VERIFICATION") {
+          return { type: "INVALID_STATUS", currentStatus };
+        }
+
+        const order = await tx.cuttingOrder.findUnique({
+          where: { id: orderId },
+          include: {
+            recipe: true,
+            verificationItems: {
+              include: {
+                component: true,
+              },
+              orderBy: {
+                component: { componentName: "asc" },
+              },
+            },
+          },
+        });
+
+        if (!order) {
+          return { type: "NOT_FOUND" };
+        }
+
+        const expectedFabricYds = computeExpectedFabric(
+          order.targetQty,
+          Number(order.recipe.stdFabricYards),
+        );
+        const actualFabricYds = Number(order.actualFabricYds);
+        const wastagePct = computeWastagePct(actualFabricYds, expectedFabricYds);
+
+        const componentVariances: ComponentVariance[] =
+          order.verificationItems.map((item) => {
+            const actual = item.actualQty ?? 0;
+            const status: TrafficLightStatus =
+              item.actualQty !== null
+                ? getStatus(item.expectedQty, item.actualQty)
+                : "RED";
+
+            return {
+              componentId: item.componentId,
+              name: item.component.componentName,
+              expected: item.expectedQty,
+              actual: item.actualQty,
+              variance: actual - item.expectedQty,
+              status,
+            };
+          });
+
+        assertTransition(order.status as OrderStatus, "REJECTED");
+
+        const updatedOrder = await tx.cuttingOrder.update({
+          where: { id: order.id },
+          data: { status: "REJECTED" },
+        });
+
+        const log = await tx.verificationLog.create({
+          data: {
+            orderId: order.id,
+            verifierId,
+            decision: "REJECTED",
+            rejectionNote: note.trim(),
+            wastagePct: new Prisma.Decimal(wastagePct),
+            componentVariances: componentVariances as unknown as Prisma.InputJsonValue,
+          },
+        });
+
+        return {
+          type: "SUCCESS",
+          order: {
+            id: updatedOrder.id,
+            orderNo: updatedOrder.orderNo,
+            status: "REJECTED" as const,
+          },
+          logId: log.id,
+          wastagePct,
+          componentVariances,
+        };
+      },
+      { timeout: 15000, maxWait: 10000 },
+    );
+
+    if (txResult.type === "NOT_FOUND") {
+      return { ok: false, status: 404, error: "Order not found" };
+    }
+
+    if (txResult.type === "INVALID_STATUS") {
+      return {
+        ok: false,
+        status: 409,
+        error: `Order status is '${txResult.currentStatus}', but must be 'PENDING_VERIFICATION'`,
+      };
+    }
+
+    return {
+      ok: true,
+      order: txResult.order,
+      logId: txResult.logId,
+      wastagePct: txResult.wastagePct,
+      componentVariances: txResult.componentVariances,
+    };
+  } catch (error) {
+    console.error("Error rejecting order:", error);
+    return {
+      ok: false,
+      status: 500,
+      error: error instanceof Error ? error.message : "Internal server error",
+    };
+  }
+}
