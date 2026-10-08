@@ -1,0 +1,12 @@
+// ApparelFlow ERP — Prisma schema (PostgreSQL / Supabase)
+// Models are added in Step 2; this file sets up the datasource only.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
