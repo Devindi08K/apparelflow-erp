@@ -5,7 +5,6 @@ import {
   listCuttingOrdersForSupervisor,
 } from "@/lib/services/orderService";
 
-export const dynamic = "force-dynamic";
 
 export async function GET() {
   const auth = await requireRole(["cutting_supervisor"]);
