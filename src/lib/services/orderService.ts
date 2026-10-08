@@ -2,6 +2,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { computeExpectedComponents } from "@/lib/multiplier";
 import {
+  assertTransition,
+  InvalidTransitionError,
+  type OrderStatus,
+} from "@/lib/stateMachine";
+import {
   createOrderSchema,
   zodErrorToFieldErrors,
 } from "@/lib/validation/order";
@@ -167,40 +172,43 @@ export async function createOrder(
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const created = await prisma.$transaction(async (tx) => {
-        const orderNo = await allocateOrderNo(tx);
+      const created = await prisma.$transaction(
+        async (tx) => {
+          const orderNo = await allocateOrderNo(tx);
 
-        const order = await tx.cuttingOrder.create({
-          data: {
-            orderNo,
-            recipeId: recipe.id,
-            targetQty: input.targetQty,
-            fabricRollId: input.fabricRollId,
-            actualFabricYds: input.actualFabricYds,
-            status: "CUTTING_IN_PROGRESS",
-            createdById: userId,
-            verificationItems: {
-              create: expectedComponents.map((component) => ({
-                componentId: component.componentId,
-                expectedQty: component.expectedQty,
-                actualQty: null,
-                status: null,
-              })),
+          const order = await tx.cuttingOrder.create({
+            data: {
+              orderNo,
+              recipeId: recipe.id,
+              targetQty: input.targetQty,
+              fabricRollId: input.fabricRollId,
+              actualFabricYds: input.actualFabricYds,
+              status: "CUTTING_IN_PROGRESS",
+              createdById: userId,
+              verificationItems: {
+                create: expectedComponents.map((component) => ({
+                  componentId: component.componentId,
+                  expectedQty: component.expectedQty,
+                  actualQty: null,
+                  status: null,
+                })),
+              },
             },
-          },
-          include: {
-            verificationItems: {
-              include: {
-                component: {
-                  select: { componentName: true },
+            include: {
+              verificationItems: {
+                include: {
+                  component: {
+                    select: { componentName: true },
+                  },
                 },
               },
             },
-          },
-        });
+          });
 
-        return order;
-      });
+          return order;
+        },
+        { timeout: 15000, maxWait: 10000 },
+      );
 
       return {
         ok: true,
@@ -236,4 +244,103 @@ export async function createOrder(
     status: 500,
     error: "Could not allocate a unique order number",
   };
+}
+
+export type SubmitOrderFailure =
+  | { ok: false; status: 404; error: string }
+  | { ok: false; status: 409; error: string }
+  | { ok: false; status: 500; error: string };
+
+export type SubmitOrderSuccess = {
+  ok: true;
+  order: {
+    id: string;
+    orderNo: string;
+    recipeId: string;
+    targetQty: number;
+    fabricRollId: string;
+    actualFabricYds: Prisma.Decimal;
+    status: "PENDING_VERIFICATION";
+    createdById: string;
+    createdAt: Date;
+    updatedAt: Date;
+    verificationItems: Array<{
+      id: string;
+      orderId: string;
+      componentId: string;
+      expectedQty: number;
+      actualQty: number | null;
+      status: string | null;
+      component: {
+        componentName: string;
+      };
+    }>;
+  };
+};
+
+export type SubmitOrderResult = SubmitOrderSuccess | SubmitOrderFailure;
+
+/**
+ * Submits an order for verification (transition to PENDING_VERIFICATION).
+ * In a transaction: re-reads order, asserts transition, resets verification items if resubmitting from REJECTED, and updates status.
+ */
+export async function submitOrder(orderId: string): Promise<SubmitOrderResult> {
+  try {
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const order = await tx.cuttingOrder.findUnique({
+          where: { id: orderId },
+        });
+
+        if (!order) {
+          return { notFound: true } as const;
+        }
+
+        assertTransition(order.status as OrderStatus, "PENDING_VERIFICATION");
+
+        if (order.status === "REJECTED") {
+          await tx.verificationItem.updateMany({
+            where: { orderId: order.id },
+            data: {
+              actualQty: null,
+              status: null,
+            },
+          });
+        }
+
+        const updated = await tx.cuttingOrder.update({
+          where: { id: order.id },
+          data: {
+            status: "PENDING_VERIFICATION",
+          },
+          include: {
+            verificationItems: {
+              include: {
+                component: {
+                  select: { componentName: true },
+                },
+              },
+            },
+          },
+        });
+
+        return { notFound: false, order: updated } as const;
+      },
+      { timeout: 15000, maxWait: 10000 },
+    );
+
+    if (result.notFound) {
+      return { ok: false, status: 404, error: "Order not found" };
+    }
+
+    return {
+      ok: true,
+      order: result.order as SubmitOrderSuccess["order"],
+    };
+  } catch (error) {
+    if (error instanceof InvalidTransitionError) {
+      return { ok: false, status: 409, error: error.message };
+    }
+    throw error;
+  }
 }

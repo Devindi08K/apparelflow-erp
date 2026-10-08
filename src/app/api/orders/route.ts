@@ -33,17 +33,25 @@ export async function POST(request: Request) {
   }
 
   // userId always from JWT session — never from the body
-  const result = await createOrder(auth.user.id, body);
+  try {
+    const result = await createOrder(auth.user.id, body);
 
-  if (!result.ok) {
-    if (result.status === 422) {
-      return NextResponse.json({ errors: result.errors }, { status: 422 });
+    if (!result.ok) {
+      if (result.status === 422) {
+        return NextResponse.json({ errors: result.errors }, { status: 422 });
+      }
+      return NextResponse.json(
+        { error: result.error },
+        { status: result.status },
+      );
     }
+
+    return NextResponse.json({ order: result.order }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating order:", error);
     return NextResponse.json(
-      { error: result.error },
-      { status: result.status },
+      { error: error instanceof Error ? error.message : "Internal server error" },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ order: result.order }, { status: 201 });
 }
