@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assertTransition, type OrderStatus } from "@/lib/stateMachine";
 
 type ApprovedLog = {
   verifier: {
@@ -170,4 +171,79 @@ export async function getSewingOrder(
     wastageCap,
     wastageExceedsCap: wastagePct > wastageCap,
   };
+}
+
+export type StartSewingResult =
+  | {
+      ok: true;
+      order: {
+        id: string;
+        orderNo: string;
+        status: "SEWING_STARTED";
+        sewingStartedBy: string;
+        sewingStartedAt: Date;
+      };
+    }
+  | { ok: false; status: 404 | 409; error: string };
+
+export async function startSewing(
+  orderId: string,
+  userId: string,
+): Promise<StartSewingResult> {
+  return prisma.$transaction(async (tx) => {
+    const now = new Date();
+    const updateResult = await tx.cuttingOrder.updateMany({
+      where: { id: orderId, status: "VERIFIED" },
+      data: {
+        status: "SEWING_STARTED",
+        sewingStartedBy: userId,
+        sewingStartedAt: now,
+      },
+    });
+
+    if (updateResult.count !== 1) {
+      const order = await tx.cuttingOrder.findUnique({
+        where: { id: orderId },
+        select: { id: true, status: true },
+      });
+
+      if (!order) {
+        return { ok: false, status: 404, error: "Order not found" };
+      }
+
+      return {
+        ok: false,
+        status: 409,
+        error: `Order status is '${order.status}', but must be 'VERIFIED' to start sewing`,
+      };
+    }
+
+    assertTransition("VERIFIED" as OrderStatus, "SEWING_STARTED");
+
+    const order = await tx.cuttingOrder.findUniqueOrThrow({
+      where: { id: orderId },
+      select: {
+        id: true,
+        orderNo: true,
+        status: true,
+        sewingStartedBy: true,
+        sewingStartedAt: true,
+      },
+    });
+
+    if (!order.sewingStartedBy || !order.sewingStartedAt) {
+      throw new Error("Sewing start metadata was not persisted");
+    }
+
+    return {
+      ok: true,
+      order: {
+        id: order.id,
+        orderNo: order.orderNo,
+        status: "SEWING_STARTED",
+        sewingStartedBy: order.sewingStartedBy,
+        sewingStartedAt: order.sewingStartedAt,
+      },
+    };
+  });
 }
