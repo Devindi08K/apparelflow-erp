@@ -5,7 +5,7 @@ import {
   InvalidTransitionError,
   ORDER_STATUSES,
   type OrderStatus,
-} from "./stateMachine";
+} from "@/lib/stateMachine";
 
 const LEGAL_TRANSITIONS: Array<[OrderStatus, OrderStatus]> = [
   ["CUTTING_IN_PROGRESS", "PENDING_VERIFICATION"],

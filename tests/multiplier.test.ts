@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeExpectedComponents,
   computeExpectedFabric,
-} from "./multiplier";
+} from "@/lib/multiplier";
 
 describe("computeExpectedComponents", () => {
   it("multiplies 50 garments × 2 cuffs = 100", () => {

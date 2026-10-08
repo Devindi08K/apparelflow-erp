@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createOrderSchema, zodErrorToFieldErrors } from "./order";
+import {
+  createOrderSchema,
+  zodErrorToFieldErrors,
+} from "@/lib/validation/order";
 
 const validPayload = {
   recipeId: "recipe-abc",
