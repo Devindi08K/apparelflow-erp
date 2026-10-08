@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { computeExpectedFabric } from "@/lib/multiplier";
 import { assertTransition, type OrderStatus } from "@/lib/stateMachine";
 
 type ApprovedLog = {
@@ -86,6 +87,8 @@ export type SewingOrderDetail = {
   recipeName: string;
   targetQty: number;
   fabricRollId: string;
+  expectedFabricYds: number;
+  actualFabricYds: number;
   status: "VERIFIED" | "SEWING_STARTED";
   verificationItems: SewingVerificationItem[];
   approvedVerification: {
@@ -111,6 +114,7 @@ export async function getSewingOrder(
         select: {
           name: true,
           wastageCap: true,
+          stdFabricYards: true,
         },
       },
       verificationItems: {
@@ -154,6 +158,11 @@ export async function getSewingOrder(
     recipeName: order.recipe.name,
     targetQty: order.targetQty,
     fabricRollId: order.fabricRollId,
+    expectedFabricYds: computeExpectedFabric(
+      order.targetQty,
+      Number(order.recipe.stdFabricYards),
+    ),
+    actualFabricYds: Number(order.actualFabricYds),
     status,
     verificationItems: order.verificationItems.map((item) => ({
       componentName: item.component.componentName,
