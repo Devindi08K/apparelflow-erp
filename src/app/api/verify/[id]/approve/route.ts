@@ -4,7 +4,6 @@ import { approveOrder } from "@/lib/services/verificationService";
 import { approveSchema } from "@/lib/validation/verification";
 import { zodErrorToFieldErrors } from "@/lib/validation/order";
 
-export const dynamic = "force-dynamic";
 
 interface RouteParams {
   params: Promise<{

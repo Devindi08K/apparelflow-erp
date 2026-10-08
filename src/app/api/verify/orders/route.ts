@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/rbac";
 import { listOrdersForVerification } from "@/lib/services/verificationService";
 
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   const auth = await requireRole(["cutting_verifier"]);
   if (!auth.ok) {

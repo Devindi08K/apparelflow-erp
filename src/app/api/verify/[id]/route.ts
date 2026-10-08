@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/rbac";
 import { getOrderForVerification } from "@/lib/services/verificationService";
 
-export const dynamic = "force-dynamic";
 
 interface RouteParams {
   params: Promise<{
