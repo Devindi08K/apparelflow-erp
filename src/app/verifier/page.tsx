@@ -678,7 +678,7 @@ export default function VerifierPage() {
               ) : orders.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   <svg
-                    className="w-10 h-10 mx-auto text-slate-300 mb-2"
+                    className="w-10 h-10 mx-auto text-slate-600 mb-2"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -746,7 +746,7 @@ export default function VerifierPage() {
             ) : !orderDetail ? (
               <div className="p-16 text-center text-slate-500">
                 <svg
-                  className="w-14 h-14 mx-auto text-slate-300 mb-3"
+                  className="w-14 h-14 mx-auto text-slate-600 mb-3"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -881,12 +881,18 @@ export default function VerifierPage() {
                               </td>
                               <td className="px-4 py-3.5">
                                 <div>
+                                  <label htmlFor={`actual-count-${item.id}`} className="sr-only">
+                                    Actual count for {item.componentName}
+                                  </label>
                                   <input
+                                    id={`actual-count-${item.id}`}
                                     type="text"
                                     inputMode="numeric"
                                     value={textVal}
                                     onChange={(e) => handleInputChange(item.componentId, e.target.value)}
                                     placeholder="Enter count"
+                                    aria-label={`Actual count for ${item.componentName}`}
+                                    aria-describedby={errorMsg ? `actual-count-error-${item.id}` : undefined}
                                     className={`w-full px-3 py-1.5 text-sm font-mono font-medium text-gray-900 bg-white rounded-md shadow-2xs transition-colors focus:outline-none focus:ring-2 ${
                                       errorMsg
                                         ? "border-2 border-red-500 focus:ring-red-400 focus:border-red-500 bg-red-50/30"
@@ -894,7 +900,7 @@ export default function VerifierPage() {
                                     }`}
                                   />
                                   {errorMsg && (
-                                    <p className="mt-1 text-xs text-red-600 font-semibold flex items-center gap-1">
+                                    <p id={`actual-count-error-${item.id}`} className="mt-1 text-xs text-red-600 font-semibold flex items-center gap-1">
                                       <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                       </svg>
@@ -987,7 +993,11 @@ export default function VerifierPage() {
                         <p className="text-xs text-slate-600 mb-3">
                           Please state the exact defect, shortage, or miscut reason. This note will be recorded permanently in the verification log.
                         </p>
+                        <label htmlFor="reject-note" className="block text-xs font-bold text-red-950 mb-1">
+                          Rejection note
+                        </label>
                         <textarea
+                          id="reject-note"
                           rows={3}
                           value={rejectNote}
                           onChange={(e) => {
@@ -997,6 +1007,7 @@ export default function VerifierPage() {
                             }
                           }}
                           placeholder="e.g. Back Panel cut with severe shortage (10 pieces damaged by dull blade; recut required)"
+                          aria-describedby={rejectNoteError ? "reject-note-error" : undefined}
                           className={`w-full px-3.5 py-2.5 text-sm font-medium text-gray-900 bg-white rounded-lg shadow-2xs transition-colors focus:outline-none focus:ring-2 ${
                             rejectNoteError
                               ? "border-2 border-red-500 focus:ring-red-400 focus:border-red-500"
@@ -1004,7 +1015,7 @@ export default function VerifierPage() {
                           }`}
                         />
                         {rejectNoteError && (
-                          <p className="mt-1 text-xs text-red-700 font-bold flex items-center gap-1">
+                          <p id="reject-note-error" className="mt-1 text-xs text-red-700 font-bold flex items-center gap-1">
                             <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>

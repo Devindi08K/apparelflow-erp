@@ -323,7 +323,7 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="text-slate-600 hover:text-slate-900 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
           >
             <span className="sr-only">Close</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -375,6 +375,7 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
                 }
               }}
               disabled={recipesLoading}
+              aria-describedby={fieldErrors.recipeId ? "recipe-select-error" : undefined}
               className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow disabled:bg-slate-100"
             >
               <option value="" className="bg-white text-slate-900">
@@ -387,7 +388,7 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
               ))}
             </select>
             {fieldErrors.recipeId && (
-              <p className="text-xs text-red-600 font-medium mt-1">{fieldErrors.recipeId}</p>
+              <p id="recipe-select-error" className="text-xs text-red-600 font-medium mt-1">{fieldErrors.recipeId}</p>
             )}
           </div>
 
@@ -412,13 +413,14 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
                   });
                 }
               }}
+              aria-describedby={targetQtyValidation.error || fieldErrors.targetQty ? "target-qty-error" : undefined}
               className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
             />
             {targetQtyValidation.error && (
-              <p className="text-xs text-red-600 font-medium mt-1">{targetQtyValidation.error}</p>
+              <p id="target-qty-error" className="text-xs text-red-600 font-medium mt-1">{targetQtyValidation.error}</p>
             )}
             {fieldErrors.targetQty && (
-              <p className="text-xs text-red-600 font-medium mt-1">{fieldErrors.targetQty}</p>
+              <p id={targetQtyValidation.error ? "target-qty-server-error" : "target-qty-error"} className="text-xs text-red-600 font-medium mt-1">{fieldErrors.targetQty}</p>
             )}
           </div>
 
@@ -442,13 +444,14 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
                   });
                 }
               }}
+              aria-describedby={fabricRollValidation.error || fieldErrors.fabricRollId ? "fabric-roll-id-error" : undefined}
               className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
             />
             {fabricRollValidation.error && (
-              <p className="text-xs text-red-600 font-medium mt-1">{fabricRollValidation.error}</p>
+              <p id="fabric-roll-id-error" className="text-xs text-red-600 font-medium mt-1">{fabricRollValidation.error}</p>
             )}
             {fieldErrors.fabricRollId && (
-              <p className="text-xs text-red-600 font-medium mt-1">{fieldErrors.fabricRollId}</p>
+              <p id={fabricRollValidation.error ? "fabric-roll-id-server-error" : "fabric-roll-id-error"} className="text-xs text-red-600 font-medium mt-1">{fieldErrors.fabricRollId}</p>
             )}
           </div>
 
@@ -473,13 +476,14 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
                   });
                 }
               }}
+              aria-describedby={actualFabricValidation.error || fieldErrors.actualFabricYds ? "actual-fabric-error" : undefined}
               className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
             />
             {actualFabricValidation.error && (
-              <p className="text-xs text-red-600 font-medium mt-1">{actualFabricValidation.error}</p>
+              <p id="actual-fabric-error" className="text-xs text-red-600 font-medium mt-1">{actualFabricValidation.error}</p>
             )}
             {fieldErrors.actualFabricYds && (
-              <p className="text-xs text-red-600 font-medium mt-1">{fieldErrors.actualFabricYds}</p>
+              <p id={actualFabricValidation.error ? "actual-fabric-server-error" : "actual-fabric-error"} className="text-xs text-red-600 font-medium mt-1">{fieldErrors.actualFabricYds}</p>
             )}
           </div>
 
@@ -540,7 +544,7 @@ function NewOrderModal({ isOpen, onClose, onOrderCreated }: NewOrderModalProps) 
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-500">
+            <div className="p-3 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-600">
               Select a recipe and enter a valid batch quantity to view the live component multiplier preview.
             </div>
           )}
@@ -711,7 +715,7 @@ export default function SupervisorPage() {
           ) : orders.length === 0 ? (
             /* Empty State */
             <div className="p-12 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-600">
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -727,7 +731,7 @@ export default function SupervisorPage() {
                 </svg>
               </div>
               <h3 className="text-base font-semibold text-slate-900">No cutting orders found</h3>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto">
+              <p className="text-sm text-slate-600 max-w-sm mx-auto">
                 No orders have been registered in the system yet. Click &quot;New Cutting Order&quot; above to create one.
               </p>
             </div>
@@ -811,7 +815,7 @@ export default function SupervisorPage() {
                               )}
                             </button>
                           ) : (
-                            <span className="text-xs text-slate-400 italic">
+                            <span className="text-xs text-slate-600 italic">
                               Submitted
                             </span>
                           )}

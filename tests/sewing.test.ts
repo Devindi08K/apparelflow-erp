@@ -30,7 +30,9 @@ vi.mock("@/lib/rbac", () => ({
   }),
 }));
 
-describe("PART E: Sewing integration tests", { timeout: 30000, hookTimeout: 30000 }, () => {
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 });
+
+describe("PART E: Sewing integration tests", () => {
   let supervisorUser: { id: string };
   let verifierUser: { id: string };
   let sewingUser: { id: string };

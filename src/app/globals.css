@@ -2,7 +2,8 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -12,15 +13,72 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+input,
+select,
+textarea,
+option {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border-color: #6b7280 !important;
+  color-scheme: light;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #4b5563 !important;
+  color-scheme: light;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  outline: 2px solid #1d4ed8;
+  outline-offset: 1px;
+  color-scheme: light;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: #111827 !important;
+  background-color: #f3f4f6 !important;
+  border-color: #6b7280 !important;
+  opacity: 1;
+  color-scheme: light;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 1;
+  color-scheme: light;
+}
+
+option {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  caret-color: #111827;
 }
