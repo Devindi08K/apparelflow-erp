@@ -175,16 +175,11 @@ export default function SewingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      const data = (await response.json().catch(() => ({}))) as {
-        error?: string;
-      };
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
       if (!response.ok) {
         setBanner({
           tone: "error",
-          message:
-            response.status === 409 || response.status === 404
-              ? data.error || `Unable to start sewing (${response.status})`
-              : data.error || `Unable to start sewing (${response.status})`,
+          message: data.error || `Unable to start sewing (${response.status})`,
         });
         return;
       }
@@ -234,9 +229,7 @@ export default function SewingPage() {
                 <h2 id="queue-heading" className="text-base font-bold">Verified batches</h2>
                 <p className="mt-1 text-xs text-slate-700">Select a batch to inspect its audit record.</p>
               </div>
-              <span className="rounded-full border border-indigo-300 bg-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-950">
-                {orders.length}
-              </span>
+              <span className="rounded-full border border-indigo-300 bg-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-950">{orders.length}</span>
             </div>
 
             {loadingQueue ? (
@@ -246,12 +239,7 @@ export default function SewingPage() {
             ) : (
               <div className="divide-y divide-slate-200">
                 {orders.map((order) => (
-                  <button
-                    key={order.id}
-                    type="button"
-                    onClick={() => void selectOrder(order.id)}
-                    className={`w-full p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-700 ${selectedOrderId === order.id ? "bg-indigo-50" : "hover:bg-slate-50"}`}
-                  >
+                  <button key={order.id} type="button" onClick={() => void selectOrder(order.id)} className={`w-full p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-700 ${selectedOrderId === order.id ? "bg-indigo-50" : "hover:bg-slate-50"}`}>
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-mono text-sm font-bold text-slate-950">{order.orderNo}</span>
                       <span className="text-xs font-semibold text-slate-700">{order.targetQty} pcs</span>
@@ -287,18 +275,12 @@ export default function SewingPage() {
                       <div className="rounded-lg border border-indigo-300 bg-indigo-50 p-3" role="group" aria-label="Confirm start sewing">
                         <p className="text-sm font-bold text-indigo-950">Start sewing for this batch?</p>
                         <div className="mt-2 flex gap-2">
-                          <button type="button" onClick={() => void startAssembly()} disabled={starting} className="rounded-md bg-indigo-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-500">
-                            {starting ? "Starting..." : "Confirm start"}
-                          </button>
-                          <button type="button" onClick={() => setConfirmingOrderId(null)} disabled={starting} className="rounded-md border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-200">
-                            Cancel
-                          </button>
+                          <button type="button" onClick={() => void startAssembly()} disabled={starting} className="rounded-md bg-indigo-700 px-3 py-2 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-500">{starting ? "Starting..." : "Confirm start"}</button>
+                          <button type="button" onClick={() => setConfirmingOrderId(null)} disabled={starting} className="rounded-md border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-200">Cancel</button>
                         </div>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => setConfirmingOrderId(detail.id)} disabled={detail.status !== "VERIFIED" || starting} className="rounded-lg bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-500">
-                        Start Sewing Assembly
-                      </button>
+                      <button type="button" onClick={() => setConfirmingOrderId(detail.id)} disabled={detail.status !== "VERIFIED" || starting} className="rounded-lg bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-500">Start Sewing Assembly</button>
                     )}
                   </div>
                 </div>
