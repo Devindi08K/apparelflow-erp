@@ -6,7 +6,7 @@ ApparelFlow is a cutting-to-sewing gatekeeper for garment production batches. Cu
 
 ## Live URL And Demo Credentials
 
-No deployed live URL is configured in this repository. Local development runs at `http://localhost:3000`.
+The deployed application is available at [https://apparelflow-erp-eosin.vercel.app/](https://apparelflow-erp-eosin.vercel.app/). Local development runs at `http://localhost:3000`.
 
 All seeded demo users use the password `Demo@12345`.
 
@@ -246,7 +246,7 @@ It logs in each demo role, creates its own API orders, and prints PASS/FAIL resu
 
 ## Assumptions And Known Limitations
 
-- No deployed URL is committed in this repository; deployment configuration and Vercel project metadata are external to the codebase.
+- Deployment configuration and Vercel project metadata are external to the codebase.
 - The root page is a minimal foundation screen; role users reach their work surface through the role-specific paths after authentication.
 - The current workflow has no sewing completion or downstream production stages after `SEWING_STARTED`.
 - The security smoke script is Bash-based and is not executable in a plain Windows PowerShell session without Git Bash, WSL, or CI.
