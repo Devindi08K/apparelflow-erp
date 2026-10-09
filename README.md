@@ -16,6 +16,11 @@ All seeded demo users use the password `Demo@12345`.
 | Cutting verifier | `verifier@apparelflow.test` | `Demo@12345` | View pending verification orders, save component counts, approve valid batches, or reject with a note. |
 | Sewing supervisor | `sewing@apparelflow.test` | `Demo@12345` | View verified sewing queue entries, inspect approved verification details, and start sewing assembly. |
 
+The seed data includes the required production recipes:
+
+- `REC-BL01` - Casual Blouse
+- `REC-CT02` - Crop Top
+
 ## Tech Stack
 
 | Technology | Why it is used |

@@ -14,6 +14,12 @@ const HOME_BY_ROLE: Record<UserRole, string> = {
   sewing_supervisor: "/sewing",
 };
 
+const DEMO_USERS: Array<{ role: UserRole; label: string; email: string }> = [
+  { role: "cutting_supervisor", label: "Cutting Supervisor", email: "supervisor@apparelflow.test" },
+  { role: "cutting_verifier", label: "Cutting Verifier", email: "verifier@apparelflow.test" },
+  { role: "sewing_supervisor", label: "Sewing Supervisor", email: "sewing@apparelflow.test" },
+];
+
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -60,6 +66,26 @@ export default function LoginForm() {
       <p className="mt-2 text-sm text-slate-700">
         Use your work-area account to open the correct dashboard.
       </p>
+      <div className="mt-4 rounded-md border border-indigo-200 bg-indigo-50 p-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-indigo-950">Demo accounts</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {DEMO_USERS.map((demo) => (
+            <button
+              key={demo.role}
+              type="button"
+              onClick={() => {
+                setEmail(demo.email);
+                setPassword("Demo@12345");
+                setError(null);
+              }}
+              className="rounded border border-indigo-300 bg-white px-2 py-1 text-xs font-semibold text-indigo-950 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-700"
+            >
+              {demo.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-indigo-900">Password: Demo@12345</p>
+      </div>
 
       {error && (
         <p className="mt-4 rounded-md border border-red-300 bg-red-100 px-3 py-2 text-sm font-semibold text-red-950" role="alert">

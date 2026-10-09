@@ -48,7 +48,7 @@ The API routes independently call `requireRole`.
 
 **How I proved the fix:** An unauthenticated browser request to `/sewing` returned `307` and redirected to `/`. Authenticated browser checks showed role-specific navigation.
 
-### Flaw 2: `force-dynamic` broke the Next.js 16 build
+### Flaw 2: `force-dynamic` and experimental cache settings broke the Next.js 16 build
 
 **What I asked:** I asked for dynamic sewing routes while the repository used Next.js 16 Cache Components. The prompt direction led to adding `export const dynamic = "force-dynamic"`.
 
@@ -62,12 +62,11 @@ At the same time, `next.config.ts` had Cache Components enabled.
 
 **Why it was wrong:** Next.js 16 rejected route-segment `dynamic` configuration when `cacheComponents: true`, so the production build failed. The first workaround disabled Cache Components, which contradicted the repository's intended configuration.
 
-**How I fixed it:** I removed the route-segment declarations, restored the original config, and put cookie/database-backed UI and role checks behind Suspense boundaries:
+**How I fixed it:** I removed the route-segment declarations and disabled the experimental Cache Components and partial-prefetching flags. Cookie/database-backed UI and role checks remain behind Suspense boundaries:
 
 ```ts
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components and partial prefetching are disabled for stable cookie-backed rendering.
 };
 ```
 
@@ -77,7 +76,7 @@ const nextConfig: NextConfig = {
 </Suspense>
 ```
 
-**How I proved the fix:** `npm run build` passed and reported the role pages as partial-prerendered with dynamic server-streamed content. A repository search found no `dynamic`, `revalidate`, or `fetchCache` route declarations.
+**How I proved the fix:** `npm run build` passed and produced all role pages and API routes. A repository search found no `dynamic`, `revalidate`, or `fetchCache` route declarations.
 
 ### Flaw 3: Sewing tests assumed fixtures and unrelated queue state
 
