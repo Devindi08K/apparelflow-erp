@@ -234,7 +234,7 @@ Test coverage is organized as follows:
 | `tests/verification.test.ts` | Database-backed approval, rejection, RBAC, audit, and immutability behavior. |
 | `tests/sewing.test.ts` | Sewing queue isolation, detail hiding, RBAC, and atomic sewing start behavior. |
 
-The database-backed suites require a reachable configured PostgreSQL database with migrations applied. They may take longer when using a remote Supabase pool.
+The database-backed suites require a reachable configured PostgreSQL database with migrations applied. They use `DATABASE_URL` from the current environment and may take longer when using a remote Supabase pool. Use a separate test database for a fresh-clone run when possible.
 
 The security smoke script requires Bash, `curl`, and `jq`:
 

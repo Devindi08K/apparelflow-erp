@@ -329,7 +329,7 @@ export async function saveCounts(
     return {
       ok: false,
       status: 500,
-      error: error instanceof Error ? error.message : "Internal server error",
+      error: "Internal server error",
     };
   }
 }
@@ -533,7 +533,7 @@ export async function approveOrder(
     return {
       ok: false,
       status: 500,
-      error: error instanceof Error ? error.message : "Internal server error",
+      error: "Internal server error",
     };
   }
 }
@@ -701,7 +701,7 @@ export async function rejectOrder(
     return {
       ok: false,
       status: 500,
-      error: error instanceof Error ? error.message : "Internal server error",
+      error: "Internal server error",
     };
   }
 }

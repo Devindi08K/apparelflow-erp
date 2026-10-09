@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/rbac";
 import { getSewingOrder } from "@/lib/services/sewingService";
 
-export const dynamic = "force-dynamic";
-
 interface RouteParams {
   params: Promise<{
     id: string;

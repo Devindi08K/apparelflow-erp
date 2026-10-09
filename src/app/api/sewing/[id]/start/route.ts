@@ -3,8 +3,6 @@ import { z } from "zod";
 import { requireRole } from "@/lib/rbac";
 import { startSewing } from "@/lib/services/sewingService";
 
-export const dynamic = "force-dynamic";
-
 const startSewingSchema = z.object({}).strict();
 
 interface RouteParams {

@@ -339,8 +339,13 @@ export async function submitOrder(orderId: string): Promise<SubmitOrderResult> {
     };
   } catch (error) {
     if (error instanceof InvalidTransitionError) {
-      return { ok: false, status: 409, error: error.message };
+      return {
+        ok: false,
+        status: 409,
+        error: `Invalid order status transition: ${error.from} -> ${error.to}`,
+      };
     }
-    throw error;
+    console.error("Error submitting order:", error);
+    return { ok: false, status: 500, error: "Internal server error" };
   }
 }

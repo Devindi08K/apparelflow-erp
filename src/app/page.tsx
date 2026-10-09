@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { getSessionUser } from "@/lib/auth";
 
 const sections = [
@@ -25,7 +26,7 @@ const sections = [
   },
 ];
 
-export default async function Home() {
+async function HomeContent() {
   const session = await getSessionUser();
   const visibleSections = session
     ? sections.filter((section) => section.role === session.role)
@@ -83,5 +84,23 @@ export default async function Home() {
         </div>
       </div>
     </main>
+  );
+}
+
+function HomeLoading() {
+  return (
+    <main className="min-h-screen bg-slate-100 text-slate-950" aria-busy="true">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <p className="text-sm font-semibold text-slate-700">Loading ApparelFlow ERP...</p>
+      </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeLoading />}>
+      <HomeContent />
+    </Suspense>
   );
 }
