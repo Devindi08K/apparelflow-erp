@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { getSessionUser } from "@/lib/auth";
+import LoginForm from "@/app/components/LoginForm";
 
 const sections = [
   {
@@ -30,7 +31,7 @@ async function HomeContent() {
   const session = await getSessionUser();
   const visibleSections = session
     ? sections.filter((section) => section.role === session.role)
-    : sections;
+    : [];
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -65,6 +66,9 @@ async function HomeContent() {
           </p>
         </header>
 
+        {!session ? (
+          <LoginForm />
+        ) : (
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {visibleSections.map((section) => (
             <Link
@@ -82,6 +86,7 @@ async function HomeContent() {
             </Link>
           ))}
         </div>
+        )}
       </div>
     </main>
   );
