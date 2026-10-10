@@ -87,7 +87,7 @@ All protected endpoints use the `af_session` HTTP-only JWT cookie. `401` means n
 
 | Method | Path | Allowed role | Success | Error codes |
 | --- | --- | --- | --- | --- |
-| `POST` | `/api/auth/login` | Public | `200` | `400`, `401` |
+| `POST` | `/api/auth/login` | Public | `200` | `401`, `422` |
 | `POST` | `/api/auth/logout` | Public | `200` | None |
 | `GET` | `/api/orders` | `cutting_supervisor` | `200` | `401`, `403` |
 | `POST` | `/api/orders` | `cutting_supervisor` | `201` | `401`, `403`, `404`, `422`, `500` |
@@ -234,8 +234,6 @@ Test coverage is organized as follows:
 | `tests/stateMachine.test.ts` | Allowed and rejected order transitions. |
 | `tests/validation/order.test.ts` | Strict cutting-order request validation. |
 | `tests/validation/verification.test.ts` | Strict counts, approval, and rejection validation. |
-| `tests/integration/validation/order.test.ts` | Order validation integration behavior. |
-| `tests/integration/validation/verification.test.ts` | Verification validation integration behavior. |
 | `tests/verification.test.ts` | Database-backed approval, rejection, RBAC, audit, and immutability behavior. |
 | `tests/sewing.test.ts` | Sewing queue isolation, detail hiding, RBAC, and atomic sewing start behavior. |
 

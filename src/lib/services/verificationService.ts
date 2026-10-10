@@ -200,6 +200,13 @@ export async function saveCounts(
   try {
     const txResult = await prisma.$transaction(
       async (tx) => {
+        await tx.$queryRaw<{ id: string; status: string }[]>`
+          SELECT id, status
+          FROM cutting_orders
+          WHERE id = ${orderId}
+          FOR UPDATE
+        `;
+
         const order = await tx.cuttingOrder.findUnique({
           where: { id: orderId },
           include: {
